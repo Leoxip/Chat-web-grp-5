@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Chat Web</title>
+//prmt  la interacción del usr con el servidor a través de los sockets.
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: sans-serif;
+        background-color: #043c47;
+      }
+  
+      .contenedor {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 8rem;
+      
+      }
+  
+      header {
+        background-color: #052f38;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        padding: 0.5rem;
+       
+      }
+  
+      header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: white;
+      }
+  
+      form {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background-color: #00333e;
+      }
+  
+      form input[type="text"] {
+        flex: 1;
+        margin-right: 1rem;
+        padding: 0.5rem;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+  
+      form button {
+        padding: 0.5rem;
+        font-size: 1rem;
+        background-color: #0091ff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+  
+      ul {
+        list-style-type: none;
+        margin: 50px 0 0; /* Agregar un margen superior de 50px */
+        padding: 1rem;
+      }
+  
+      li {
+        padding: 0.5rem;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+      }
+  
+      li:nth-child(odd) {
+        background-color: #033540;      }
+  
+      li:nth-child(even) {
+        background-color: #114653; 
+      }
+  
+  
+    .enviado {
+      background-color: #114653 !important; 
+    color: white;
+    align-self: flex-end;
+  }
+  
+  .recibido {
+    background-color: #033540!important;
+    color: rgb(136, 227, 253);
+    align-self: flex-start;
+  }
+
+
+    </style>
+    </head>
+    <body>
+      <div class="contenedor">
+        <header>
+          <h1>Chat Web</h1>
+        </header>
+        <ul id="mensajes"></ul>
+        <form id="formulario">
+          <input type="text" id="username" placeholder="Nombre de usuario">
+          <input type="text" id="mensaje" placeholder="Escribe un mensaje">
+         
+          <button type="submit">Enviar</button>
+        </form>
+      </div>
+
+    <script src="http://localhost:3002/socket.io/socket.io.js"></script>
+
+    <script>
+      // Referenciando a los elementos del DOM
+      //conexion sock mediat obj io, q utlz comnc real serv clnt 
+      //selecion for envi msj a trvs id, camp dl entrada a trvs id
+      //ul contenedor de msj a tvs id, utlz mostr los msj envi y recib
+      let socket = io();
+      const formulario = document.querySelector('#formulario');
+      const mensaje = document.querySelector('#mensaje');
+      let mensajes = document.querySelector('#mensajes');
+      
+
+      //obj for par agrg evenlis al evnt submit q s acti usr
+      //metodo preventdefault se llma en el obj del event e , pr evitar q el for se envie aut y rcg pg
+      //verfc el vlr dl cmp msj no esta vcio, si cmp no vcio s cret obj data q tn 3 prds
+      //dsp cre el obj data s emit un evnt dl socket chtmsj cn dat prmtr
+      formulario.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (mensaje.value) {
+      let data = {
+      id: socket.id,
+      username: username.value,
+      message: mensaje.value
+      };
+      socket.emit('chatMensaje', data);
+      mensaje.value = '';  //si mjs vlr cmp s borr pr q el usr escrb otr msj.
+      }
+      });
+    
+      //obj socket cn el evnt chtMsj.fncion tom4 un objd data cm argtm  q cntine la info sbre el msj envd.
+      //dnd creat item list utlz metd createlemt del obj docmt, tmb cre span  
+      //lg el vlr del name se estble ultz  la pridd textcont dl spn
+  socket.on('chatMensaje', (data) => {
+  let item = document.createElement('li');  //represnt la list de msj del cht
+  let span = document.createElement('span'); //se utls pr mostr el name del usr 
+  span.textContent = data.username; //asigna valor 
+  item.appendChild(span); //agrg el elemt spn cm hijo dl elemt "li" utlznd el método appendChild dl obj item.
+  item.textContent += ': ' + data.message;//concatena l msj rcb cn nameusr y s agrg li
+
+  //vrfc el id sokt y el id dl obj data
+  //en caso cotrario no coinciden sign q el msj fue enviado x otro usuario
+  if (socket.id === data.id) {
+    item.classList.add('enviado'); //si cumple el msj envd x clnt, x lo tnt se agr la cls enviado a elmt li
+  } else {
+    item.classList.add('recibido');//y se agrg la cls recivido al elmt li
+  }
+// agrg el elemt "li" creado anteriormente a la lista de mensajes en el chat
+  mensajes.appendChild(item);
+  window.scrollTo(0, document.body.scrollHeight); //utliz para q la ventan se desplace atomtc hacia la parte inferior
+  });
+
+      
+    </script>
+  </body>
+</html>
